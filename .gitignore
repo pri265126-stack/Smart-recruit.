@@ -1,0 +1,5 @@
+.vscode/
+__pycache__/
+*.pyc
+session_metrics.csv
+session_metrics_backup.csv
