@@ -23,9 +23,6 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-# --------------------------------------------------------------------------
-# Configuration
-# --------------------------------------------------------------------------
 SEED = 42
 N_SAMPLES = 10_000
 OUT_DIR = Path(__file__).resolve().parent
@@ -60,9 +57,6 @@ class DatasetValidationError(Exception):
     """Raised when generated data fails validation."""
 
 
-# --------------------------------------------------------------------------
-# Helpers
-# --------------------------------------------------------------------------
 def make_gaze(left, right):
     """Return (center, left, right) rounded to 2 decimals and summing to 100."""
     left = float(np.clip(left, 0.0, 100.0))
@@ -128,9 +122,6 @@ def row(presence, max_faces, longest, mfd, events, center, left, right):
     }
 
 
-# --------------------------------------------------------------------------
-# Class generators (each returns one feature dict)
-# --------------------------------------------------------------------------
 def gen_normal(rng):
     duration = rng.uniform(120, 1800)
     presence, longest = small_absence(rng, duration)
@@ -242,9 +233,6 @@ GENERATORS = {
 }
 
 
-# --------------------------------------------------------------------------
-# Dataset construction
-# --------------------------------------------------------------------------
 def class_counts(n_total):
     counts = {k: int(round(n_total * v)) for k, v in CLASS_PROPORTIONS.items()}
     diff = n_total - sum(counts.values())
@@ -282,9 +270,6 @@ def generate_dataset(n_total=N_SAMPLES, seed=SEED):
     return df[COLUMNS]
 
 
-# --------------------------------------------------------------------------
-# Validation
-# --------------------------------------------------------------------------
 def validate_dataset(df, n_expected=N_SAMPLES):
     """Return list of PASS messages, or raise DatasetValidationError."""
     errors, passed = [], []
@@ -379,9 +364,6 @@ def validate_splits(train, val, test, full):
         raise DatasetValidationError("Split validation FAILED:\n - " + "\n - ".join(errors))
 
 
-# --------------------------------------------------------------------------
-# Main
-# --------------------------------------------------------------------------
 def main():
     print("Generating synthetic face-activity dataset ...")
     df = generate_dataset()

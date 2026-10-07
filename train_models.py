@@ -20,9 +20,7 @@ from sklearn.metrics import (
 from xgboost import XGBClassifier
 
 
-# ============================================================
-# 1. LOAD DATA
-# ============================================================
+
 
 print("\nLoading datasets...")
 
@@ -35,9 +33,7 @@ print("Validation :", validation_df.shape)
 print("Test       :", test_df.shape)
 
 
-# ============================================================
-# 2. FEATURES AND TARGET
-# ============================================================
+
 
 FEATURES = [
     "face_presence_percent",
@@ -63,9 +59,7 @@ X_test = test_df[FEATURES]
 y_test = test_df[TARGET]
 
 
-# ============================================================
-# 3. LABEL ENCODING FOR XGBOOST
-# ============================================================
+
 
 print("\nEncoding labels for XGBoost...")
 
@@ -81,9 +75,7 @@ for number, label in enumerate(label_encoder.classes_):
     print(f"{number} -> {label}")
 
 
-# ============================================================
-# 4. DEFINE MODELS
-# ============================================================
+
 
 models = {
 
@@ -136,9 +128,7 @@ models = {
 }
 
 
-# ============================================================
-# 5. TRAIN MODELS
-# ============================================================
+
 
 results = []
 
@@ -154,9 +144,7 @@ for name, model in models.items():
 
     print(f"\nTraining: {name}")
 
-    # --------------------------------------------------------
-    # XGBoost needs encoded labels
-    # --------------------------------------------------------
+    
 
     if name == "XGBoost":
 
@@ -172,9 +160,7 @@ for name, model in models.items():
             y_train
         )
 
-    # --------------------------------------------------------
-    # Validation prediction
-    # --------------------------------------------------------
+    
 
     val_pred = model.predict(X_validation)
 
@@ -187,10 +173,7 @@ for name, model in models.items():
             val_pred.astype(int)
         )
 
-    # --------------------------------------------------------
-    # Metrics
-    # --------------------------------------------------------
-
+    
     accuracy = accuracy_score(
         y_validation,
         val_pred
@@ -224,9 +207,7 @@ for name, model in models.items():
         zero_division=0
     )
 
-    # --------------------------------------------------------
-    # Save results
-    # --------------------------------------------------------
+    
 
     results.append({
         "Model": name,
@@ -239,9 +220,7 @@ for name, model in models.items():
 
     trained_models[name] = model
 
-    # --------------------------------------------------------
-    # Print results
-    # --------------------------------------------------------
+    
 
     print(f"Accuracy    : {accuracy:.4f}")
     print(f"Precision   : {precision:.4f}")
@@ -250,9 +229,7 @@ for name, model in models.items():
     print(f"Weighted F1 : {weighted_f1:.4f}")
 
 
-# ============================================================
-# 6. MODEL COMPARISON
-# ============================================================
+
 
 results_df = pd.DataFrame(results)
 
@@ -282,9 +259,7 @@ results_df.to_csv(
 print("\nSaved: model_comparison.csv")
 
 
-# ============================================================
-# 7. SELECT BEST MODEL
-# ============================================================
+
 
 best_model_name = results_df.iloc[0]["Model"]
 
@@ -306,9 +281,6 @@ print(
 )
 
 
-# ============================================================
-# 8. FINAL TEST EVALUATION
-# ============================================================
 
 print("\n")
 print("=" * 70)
@@ -330,9 +302,7 @@ if best_model_name == "XGBoost":
     )
 
 
-# ------------------------------------------------------------
-# Metrics
-# ------------------------------------------------------------
+
 
 test_accuracy = accuracy_score(
     y_test,
@@ -375,10 +345,6 @@ print(f"Macro F1    : {test_f1:.4f}")
 print(f"Weighted F1 : {test_weighted_f1:.4f}")
 
 
-# ============================================================
-# 9. CLASSIFICATION REPORT
-# ============================================================
-
 print("\n")
 print("=" * 70)
 print("CLASSIFICATION REPORT")
@@ -406,10 +372,6 @@ print(
     "Saved: classification_report.txt"
 )
 
-
-# ============================================================
-# 10. CONFUSION MATRIX
-# ============================================================
 
 print("\n")
 print("=" * 70)
@@ -445,9 +407,6 @@ print(
 )
 
 
-# ============================================================
-# 11. SAVE BEST MODEL
-# ============================================================
 
 joblib.dump(
     best_model,
@@ -464,9 +423,6 @@ print(
 )
 
 
-# ============================================================
-# 12. SAVE LABEL ENCODER
-# ============================================================
 
 joblib.dump(
     label_encoder,
@@ -478,9 +434,6 @@ print(
 )
 
 
-# ============================================================
-# 13. FINAL SUMMARY
-# ============================================================
 
 print("\n")
 print("=" * 70)

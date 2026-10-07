@@ -5,11 +5,7 @@ import time
 import csv
 import os
 import joblib
-
-
-# =========================================================
-# 1. LOAD TRAINED MODEL
-# =========================================================
+ 
 
 MODEL_FILE = "best_face_activity_model.pkl"
 LABEL_ENCODER_FILE = "label_encoder.pkl"
@@ -28,9 +24,7 @@ label_encoder = joblib.load(LABEL_ENCODER_FILE)
 print("AI model loaded successfully.")
 
 
-# =========================================================
-# 2. MEDIAPIPE SETUP
-# =========================================================
+
 
 BaseOptions = mp.tasks.BaseOptions
 FaceLandmarker = mp.tasks.vision.FaceLandmarker
@@ -48,9 +42,7 @@ options = FaceLandmarkerOptions(
 landmarker = FaceLandmarker.create_from_options(options)
 
 
-# =========================================================
-# 3. CAMERA SETUP
-# =========================================================
+
 
 cap = cv2.VideoCapture(0)
 
@@ -60,15 +52,11 @@ if not cap.isOpened():
     exit()
 
 
-# =========================================================
-# 4. SESSION VARIABLES
-# =========================================================
+
 
 csv_file = "session_metrics.csv"
 
-# ---------------------------------------------------------
-# Automatic Session ID
-# ---------------------------------------------------------
+
 
 if os.path.exists(csv_file):
 
@@ -90,9 +78,6 @@ session_id = f"S{existing_sessions + 1:03d}"
 print(f"Session ID: {session_id}")
 
 
-# ---------------------------------------------------------
-# Frame counters
-# ---------------------------------------------------------
 
 total_frames = 0
 
@@ -121,9 +106,6 @@ left_frames = 0
 right_frames = 0
 
 
-# =========================================================
-# 5. MAIN CAMERA LOOP
-# =========================================================
 
 while True:
 
@@ -135,36 +117,27 @@ while True:
 
     total_frames += 1
 
-    # -----------------------------------------------------
-    # BGR -> RGB
-    # -----------------------------------------------------
+    
 
     rgb = cv2.cvtColor(
         frame,
         cv2.COLOR_BGR2RGB
     )
 
-    # -----------------------------------------------------
-    # MediaPipe image
-    # -----------------------------------------------------
-
+    
     mp_image = mp.Image(
         image_format=mp.ImageFormat.SRGB,
         data=rgb
     )
 
-    # -----------------------------------------------------
-    # Detect face landmarks
-    # -----------------------------------------------------
+    
 
     result = landmarker.detect(mp_image)
 
     face_count = len(result.face_landmarks)
 
 
-    # =====================================================
-    # 6. FACE PRESENCE
-    # =====================================================
+    
 
     if face_count > 0:
 
@@ -188,17 +161,13 @@ while True:
             face_absence_start = time.time()
 
 
-    # =====================================================
-    # 7. MAXIMUM NUMBER OF FACES
-    # =====================================================
+    
 
     if face_count > max_faces_detected:
         max_faces_detected = face_count
 
 
-    # =====================================================
-    # 8. MULTIPLE FACE DURATION
-    # =====================================================
+    
 
     if face_count > 1:
 
@@ -218,9 +187,7 @@ while True:
             multiple_face_start = None
 
 
-    # =====================================================
-    # 9. GAZE ESTIMATION
-    # =====================================================
+    
 
     gaze = "No Face"
 
@@ -242,9 +209,7 @@ while True:
         # Difference between eye center and nose
         difference = eye_center - nose.x
 
-        # -------------------------------------------------
-        # Determine gaze direction
-        # -------------------------------------------------
+        
 
         if difference < -0.015:
 
@@ -262,9 +227,7 @@ while True:
             center_frames += 1
 
 
-        # =================================================
-        # LOOKING-AWAY EVENT
-        # =================================================
+        
 
         if gaze == "Looking Center":
 
@@ -290,18 +253,14 @@ while True:
                 event_counted = True
 
 
-    # =====================================================
-    # 10. LIVE FACE PRESENCE
-    # =====================================================
+    
 
     face_presence = (
         face_frames / total_frames
     ) * 100
 
 
-    # =====================================================
-    # 11. DISPLAY INFORMATION
-    # =====================================================
+    
 
     if face_count == 0:
 
@@ -379,21 +338,12 @@ while True:
     )
 
 
-    # =====================================================
-    # PRESS Q TO END SESSION
-    # =====================================================
-
+    
     if cv2.waitKey(1) & 0xFF == ord("q"):
         break
 
 
-# =========================================================
-# 12. FINAL SESSION CALCULATIONS
-# =========================================================
 
-# ---------------------------------------------------------
-# Face still absent
-# ---------------------------------------------------------
 
 if face_absence_start is not None:
 
@@ -405,9 +355,7 @@ if face_absence_start is not None:
         longest_face_absence = absence_time
 
 
-# ---------------------------------------------------------
-# Multiple faces still present
-# ---------------------------------------------------------
+
 
 if multiple_face_start is not None:
 
@@ -418,9 +366,7 @@ if multiple_face_start is not None:
     multiple_face_duration += duration
 
 
-# ---------------------------------------------------------
-# Face presence percentage
-# ---------------------------------------------------------
+
 
 if total_frames > 0:
 
@@ -433,9 +379,7 @@ else:
     face_presence_percentage = 0
 
 
-# =========================================================
-# 13. GAZE PERCENTAGES
-# =========================================================
+
 
 total_gaze_frames = (
     center_frames
@@ -465,9 +409,7 @@ else:
     looking_right_percentage = 0
 
 
-# =========================================================
-# 14. SHOW MODEL INPUT FEATURES
-# =========================================================
+
 
 print("\n")
 print("=" * 50)
@@ -517,9 +459,6 @@ print(
 print("=" * 50)
 
 
-# =========================================================
-# 15. PREPARE MODEL INPUT
-# =========================================================
 
 features = [[
 
@@ -535,9 +474,7 @@ features = [[
 ]]
 
 
-# =========================================================
-# 16. AI PREDICTION
-# =========================================================
+
 
 prediction_encoded = model.predict(
     features
@@ -548,9 +485,6 @@ prediction = label_encoder.inverse_transform(
 )[0]
 
 
-# =========================================================
-# 17. MODEL CONFIDENCE
-# =========================================================
 
 confidence = None
 
@@ -565,9 +499,7 @@ if hasattr(model, "predict_proba"):
     ) * 100
 
 
-# =========================================================
-# 18. FLAGGING LOGIC
-# =========================================================
+
 
 flag = False
 
@@ -576,9 +508,7 @@ flag_reason = (
 )
 
 
-# ---------------------------------------------------------
-# Multiple faces
-# ---------------------------------------------------------
+
 
 if max_faces_detected > 1:
 
@@ -589,9 +519,7 @@ if max_faces_detected > 1:
     )
 
 
-# ---------------------------------------------------------
-# Prolonged no face
-# ---------------------------------------------------------
+
 
 elif longest_face_absence >= 3:
 
@@ -602,9 +530,6 @@ elif longest_face_absence >= 3:
     )
 
 
-# ---------------------------------------------------------
-# Repeated looking away
-# ---------------------------------------------------------
 
 elif (
     prediction == "LOOKING_AWAY"
@@ -618,9 +543,7 @@ elif (
     )
 
 
-# ---------------------------------------------------------
-# Left looking
-# ---------------------------------------------------------
+
 
 elif prediction == "LOOKING_LEFT":
 
@@ -641,9 +564,7 @@ elif prediction == "LOOKING_LEFT":
         )
 
 
-# ---------------------------------------------------------
-# Right looking
-# ---------------------------------------------------------
+
 
 elif prediction == "LOOKING_RIGHT":
 
@@ -664,9 +585,6 @@ elif prediction == "LOOKING_RIGHT":
         )
 
 
-# ---------------------------------------------------------
-# Normal
-# ---------------------------------------------------------
 
 elif prediction == "NORMAL":
 
@@ -677,9 +595,7 @@ elif prediction == "NORMAL":
     )
 
 
-# ---------------------------------------------------------
-# No face prediction
-# ---------------------------------------------------------
+
 
 elif prediction == "NO_FACE":
 
@@ -690,9 +606,6 @@ elif prediction == "NO_FACE":
     )
 
 
-# ---------------------------------------------------------
-# Default
-# ---------------------------------------------------------
 
 else:
 
@@ -703,17 +616,13 @@ else:
     )
 
 
-# =========================================================
-# 19. SAVE SESSION DATA
-# =========================================================
+
 
 csv_file = "session_metrics.csv"
 
 file_exists = os.path.exists(csv_file)
 
-# ---------------------------------------------------------
-# Expected CSV header
-# ---------------------------------------------------------
+
 
 header = [
     "Session ID",
@@ -749,9 +658,7 @@ with open(
         writer.writerow(header)
 
 
-    # -----------------------------------------------------
-    # Save one complete row
-    # -----------------------------------------------------
+    
 
     writer.writerow([
 
@@ -804,9 +711,6 @@ with open(
     ])
 
 
-# =========================================================
-# 20. RELEASE RESOURCES
-# =========================================================
 
 cap.release()
 
@@ -815,9 +719,6 @@ cv2.destroyAllWindows()
 landmarker.close()
 
 
-# =========================================================
-# 21. FINAL RESULT
-# =========================================================
 
 print("\n")
 print("=" * 50)
